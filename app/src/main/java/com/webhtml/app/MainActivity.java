@@ -26,7 +26,6 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -263,36 +262,25 @@ public class MainActivity extends AppCompatActivity {
             btnDrawable.setColor(Color.parseColor("#CAD967"));
             btnDrawable.setCornerRadius(8 * density);
 
-            Button closeButton = new Button(this);
+            // Korišćenje TextView umesto Button klase da bi se u potpunosti izbegle podrazumevane Android dimenzije
+            TextView closeButton = new TextView(this);
             closeButton.setText("Close");
-            closeButton.setAllCaps(false);
             closeButton.setTextColor(Color.parseColor("#070707"));
             closeButton.setBackground(btnDrawable);
             closeButton.setTextSize(13);
-            
-            closeButton.setIncludeFontPadding(false);
-            closeButton.setMinWidth(0);
-            closeButton.setMinimumWidth(0);
-            closeButton.setMinHeight(0);
-            closeButton.setMinimumHeight(0);
+            closeButton.setGravity(Gravity.CENTER);
             closeButton.setPadding((int)(14 * density), (int)(6 * density), (int)(14 * density), (int)(6 * density));
 
-            Button saveButton = new Button(this);
-            saveButton.setText("Save");
-            saveButton.setAllCaps(false);
-            saveButton.setTextColor(Color.parseColor("#070707"));
-            
             GradientDrawable saveBtnDrawable = new GradientDrawable();
             saveBtnDrawable.setColor(Color.parseColor("#CAD967"));
             saveBtnDrawable.setCornerRadius(8 * density);
+
+            TextView saveButton = new TextView(this);
+            saveButton.setText("Save");
+            saveButton.setTextColor(Color.parseColor("#070707"));
             saveButton.setBackground(saveBtnDrawable);
             saveButton.setTextSize(13);
-            
-            saveButton.setIncludeFontPadding(false);
-            saveButton.setMinWidth(0);
-            saveButton.setMinimumWidth(0);
-            saveButton.setMinHeight(0);
-            saveButton.setMinimumHeight(0);
+            saveButton.setGravity(Gravity.CENTER);
             saveButton.setPadding((int)(14 * density), (int)(6 * density), (int)(14 * density), (int)(6 * density));
 
             LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
