@@ -210,7 +210,10 @@ public class MainActivity extends AppCompatActivity {
 
             float density = getResources().getDisplayMetrics().density;
 
-            // Glavni layout
+            // =========================================================
+            // GLAVNI LAYOUT DIALOGA
+            // =========================================================
+
             LinearLayout layout = new LinearLayout(this);
             layout.setOrientation(LinearLayout.VERTICAL);
 
@@ -225,10 +228,22 @@ public class MainActivity extends AppCompatActivity {
                     padBottom
             );
 
-            // Pozadina dialoga
+            // =========================================================
+            // BOJA PROZORA
+            // TAČNA BOJA: #1C1C1E
+            // Ako kasnije želiš da promeniš boju, menjaš samo ovaj kod.
+            // =========================================================
+
             GradientDrawable backgroundDrawable = new GradientDrawable();
-            backgroundDrawable.setColor(Color.parseColor("#1C1C1E"));
+
+            backgroundDrawable.setColor(
+                    Color.parseColor("#1C1C1E")
+            );
+
+            // Zaobljenje uglova prozora
             backgroundDrawable.setCornerRadius(24 * density);
+
+            // Tanka ivica oko prozora
             backgroundDrawable.setStroke(
                     (int) (1 * density),
                     Color.parseColor("#3F4235")
@@ -236,19 +251,28 @@ public class MainActivity extends AppCompatActivity {
 
             layout.setBackground(backgroundDrawable);
 
-            // =========================
+            // =========================================================
             // NASLOV
-            // =========================
+            // =========================================================
 
             TextView titleView = new TextView(this);
 
-            // Tvoj postojeći tekst
+            // TVOJ POSTOJEĆI TEKST
             titleView.setText("Save File");
 
-            titleView.setTextColor(Color.parseColor("#F1F1F3"));
+            titleView.setTextColor(
+                    Color.parseColor("#F1F1F3")
+            );
+
             titleView.setTextSize(19);
-            titleView.setTypeface(null, android.graphics.Typeface.BOLD);
+
+            titleView.setTypeface(
+                    null,
+                    android.graphics.Typeface.BOLD
+            );
+
             titleView.setGravity(Gravity.START);
+
             titleView.setPadding(
                     0,
                     0,
@@ -258,15 +282,19 @@ public class MainActivity extends AppCompatActivity {
 
             layout.addView(titleView);
 
-            // =========================
+            // =========================================================
             // INPUT / NAZIV FAJLA
-            // =========================
+            // =========================================================
 
             final EditText input = new EditText(this);
 
             input.setText(suggestedFileName);
             input.setTextSize(16);
-            input.setTextColor(Color.parseColor("#D9D9DD"));
+
+            input.setTextColor(
+                    Color.parseColor("#D9D9DD")
+            );
+
             input.setSingleLine(true);
             input.setBackgroundColor(Color.TRANSPARENT);
 
@@ -290,10 +318,16 @@ public class MainActivity extends AppCompatActivity {
                     )
             );
 
-            // Tanka linija ispod filename-a
+            // =========================================================
+            // CRTA ISPOD NAZIVA FAJLA
+            // OVA CRTA OSTAJE NA SVOM MESTU.
+            // =========================================================
+
             View bottomLine = new View(this);
 
-            bottomLine.setBackgroundColor(Color.parseColor("#37373A"));
+            bottomLine.setBackgroundColor(
+                    Color.parseColor("#37373A")
+            );
 
             LinearLayout.LayoutParams lineParams =
                     new LinearLayout.LayoutParams(
@@ -301,35 +335,71 @@ public class MainActivity extends AppCompatActivity {
                             (int) (1 * density)
                     );
 
-            inputContainer.addView(bottomLine, lineParams);
+            inputContainer.addView(
+                    bottomLine,
+                    lineParams
+            );
 
             layout.addView(inputContainer);
 
-            // =========================
+            // =========================================================
             // DUGMAD
-            // =========================
+            // =========================================================
 
             LinearLayout buttonLayout = new LinearLayout(this);
-            buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
-            buttonLayout.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+
+            buttonLayout.setOrientation(
+                    LinearLayout.HORIZONTAL
+            );
+
+            buttonLayout.setGravity(
+                    Gravity.END | Gravity.CENTER_VERTICAL
+            );
+
+            // =========================================================
+            // POZICIJA DUGMADI ISPOD CRTE
+            //
+            // 48dp = trenutno rastojanje od crte.
+            //
+            // Ranije je bilo 8dp.
+            // Dakle, dugmad su sada spuštena dodatnih 40dp.
+            //
+            // Ako kasnije želiš:
+            // 40 = manje rastojanje
+            // 48 = trenutno
+            // 55 = još niže
+            // =========================================================
 
             buttonLayout.setPadding(
                     0,
-                    (int) (8 * density),
+                    (int) (48 * density),
                     0,
                     (int) (4 * density)
             );
 
-            // CLOSE
+            // =========================================================
+            // CLOSE DUGME
+            // =========================================================
+
             TextView closeButton = new TextView(this);
 
-            // Tvoj postojeći tekst
+            // TVOJ POSTOJEĆI TEKST
             closeButton.setText("Close");
 
-            closeButton.setTextColor(Color.parseColor("#8FA8FF"));
+            closeButton.setTextColor(
+                    Color.parseColor("#8FA8FF")
+            );
+
             closeButton.setTextSize(14);
-            closeButton.setGravity(Gravity.CENTER);
-            closeButton.setTypeface(null, android.graphics.Typeface.NORMAL);
+
+            closeButton.setGravity(
+                    Gravity.CENTER
+            );
+
+            closeButton.setTypeface(
+                    null,
+                    android.graphics.Typeface.NORMAL
+            );
 
             closeButton.setPadding(
                     (int) (14 * density),
@@ -338,16 +408,47 @@ public class MainActivity extends AppCompatActivity {
                     (int) (10 * density)
             );
 
-            // SAVE
+            // =========================================================
+            // KLIK EFEKAT ZA CLOSE
+            // Android ripple efekat prilikom pritiska.
+            // =========================================================
+
+            android.util.TypedValue closeRipple =
+                    new android.util.TypedValue();
+
+            getTheme().resolveAttribute(
+                    android.R.attr.selectableItemBackgroundBorderless,
+                    closeRipple,
+                    true
+            );
+
+            closeButton.setBackgroundResource(
+                    closeRipple.resourceId
+            );
+
+            // =========================================================
+            // SAVE DUGME
+            // =========================================================
+
             TextView saveButton = new TextView(this);
 
-            // Tvoj postojeći tekst
+            // TVOJ POSTOJEĆI TEKST
             saveButton.setText("Save");
 
-            saveButton.setTextColor(Color.parseColor("#8FA8FF"));
+            saveButton.setTextColor(
+                    Color.parseColor("#8FA8FF")
+            );
+
             saveButton.setTextSize(14);
-            saveButton.setGravity(Gravity.CENTER);
-            saveButton.setTypeface(null, android.graphics.Typeface.BOLD);
+
+            saveButton.setGravity(
+                    Gravity.CENTER
+            );
+
+            saveButton.setTypeface(
+                    null,
+                    android.graphics.Typeface.BOLD
+            );
 
             saveButton.setPadding(
                     (int) (14 * density),
@@ -356,7 +457,28 @@ public class MainActivity extends AppCompatActivity {
                     (int) (10 * density)
             );
 
-            // Razmak između dugmadi
+            // =========================================================
+            // KLIK EFEKAT ZA SAVE
+            // Android ripple efekat prilikom pritiska.
+            // =========================================================
+
+            android.util.TypedValue saveRipple =
+                    new android.util.TypedValue();
+
+            getTheme().resolveAttribute(
+                    android.R.attr.selectableItemBackgroundBorderless,
+                    saveRipple,
+                    true
+            );
+
+            saveButton.setBackgroundResource(
+                    saveRipple.resourceId
+            );
+
+            // =========================================================
+            // RAZMAK IZMEĐU CLOSE I SAVE
+            // =========================================================
+
             LinearLayout.LayoutParams closeParams =
                     new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -385,9 +507,9 @@ public class MainActivity extends AppCompatActivity {
 
             layout.addView(buttonLayout);
 
-            // =========================
+            // =========================================================
             // ALERT DIALOG
-            // =========================
+            // =========================================================
 
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setView(layout)
@@ -399,13 +521,22 @@ public class MainActivity extends AppCompatActivity {
                 );
             }
 
+            // =========================================================
+            // CLOSE KLIK
+            // =========================================================
+
             closeButton.setOnClickListener(v -> {
                 dialog.dismiss();
             });
 
+            // =========================================================
+            // SAVE KLIK
+            // =========================================================
+
             saveButton.setOnClickListener(v -> {
 
-                String finalName = input.getText().toString().trim();
+                String finalName =
+                        input.getText().toString().trim();
 
                 if (finalName.isEmpty()) {
                     finalName = suggestedFileName;
@@ -423,28 +554,59 @@ public class MainActivity extends AppCompatActivity {
 
             dialog.show();
 
-            if (dialog.getWindow() != null) {
-            WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
-            params.dimAmount = 0.05f;
-            dialog.getWindow().setAttributes(params);
-            }  
+            // =========================================================
+            // ZATAMNJENJE EKRANA IZA PROZORA
+            //
+            // 0.00f = bez zatamnjenja
+            // 0.08f = veoma blago zatamnjenje (trenutno)
+            // 0.15f = jače
+            // 0.32f = jako zatamnjenje
+            //
+            // Ako želiš potpuno bez zatamnjenja:
+            // params.dimAmount = 0.00f;
+            // =========================================================
 
-            // =========================
-            // VELIČINA DIALOGA
-            // =========================
+            if (dialog.getWindow() != null) {
+
+                WindowManager.LayoutParams params =
+                        dialog.getWindow().getAttributes();
+
+                params.dimAmount = 0.08f;
+
+                dialog.getWindow().setAttributes(params);
+            }
+
+            // =========================================================
+            // ŠIRINA PROZORA
+            //
+            // 64dp = trenutno podešena širina.
+            //
+            // Veći broj = UŽI prozor
+            // Manji broj = ŠIRI prozor
+            //
+            // 48dp = prethodna širina
+            // 64dp = sadašnja širina
+            // =========================================================
 
             if (dialog.getWindow() != null) {
 
                 WindowManager.LayoutParams lp =
                         new WindowManager.LayoutParams();
 
-                lp.copyFrom(dialog.getWindow().getAttributes());
+                lp.copyFrom(
+                        dialog.getWindow().getAttributes()
+                );
 
                 int screenWidth =
-                        getResources().getDisplayMetrics().widthPixels;
+                        getResources()
+                                .getDisplayMetrics()
+                                .widthPixels;
 
-                lp.width = screenWidth - (int) (48 * density);
-                lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                lp.width =
+                        screenWidth - (int) (64 * density);
+
+                lp.height =
+                        WindowManager.LayoutParams.WRAP_CONTENT;
 
                 dialog.getWindow().setAttributes(lp);
             }
