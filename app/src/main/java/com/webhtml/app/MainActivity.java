@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Gravity;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -209,37 +208,41 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             float density = getResources().getDisplayMetrics().density;
             
-            // Glavni kontejner sa #1a1a1c pozadinom
+            // Glavni kontejner sa novom bojom pozadine #0F0F0F i borderom #454835
             LinearLayout layout = new LinearLayout(this);
             layout.setOrientation(LinearLayout.VERTICAL);
-            int padHoriz = (int) (22 * density); // blago smanjeno unutar layout-a
+            int padHoriz = (int) (22 * density);
             int padVert = (int) (18 * density);
             layout.setPadding(padHoriz, padVert, padHoriz, padVert);
             
             GradientDrawable backgroundDrawable = new GradientDrawable();
-            backgroundDrawable.setColor(Color.parseColor("#1a1a1c"));
+            backgroundDrawable.setColor(Color.parseColor("#0F0F0F"));
             backgroundDrawable.setCornerRadius(16 * density);
+            // Border od 1px sa bojom #454835
+            backgroundDrawable.setStroke((int) (1 * density), Color.parseColor("#454835"));
             layout.setBackground(backgroundDrawable);
 
             // Naslov dijaloga
             TextView titleView = new TextView(this);
             titleView.setText("Save File");
-            titleView.setTextColor(Color.parseColor("#CBD868"));
+            titleView.setTextColor(Color.parseColor("#CAD967"));
             titleView.setTextSize(17);
             titleView.setGravity(Gravity.CENTER);
             titleView.setPadding(0, 0, 0, (int)(14 * density));
             layout.addView(titleView);
 
-            // Input polje za naziv fajla sa bojom pozadine #373737
+            // Input polje u formi obične linije (donja linija) sa bojom #373737
             final EditText input = new EditText(this);
             input.setText(suggestedFileName);
             input.setTextSize(15);
             input.setTextColor(Color.parseColor("#F3F2F6"));
-            input.setPadding((int)(12 * density), (int)(10 * density), (int)(12 * density), (int)(10 * density));
+            // Smanjen vertikalni padding da liči na tanku liniju, bez pozadinske ispunjenosti
+            input.setPadding((int)(4 * density), (int)(6 * density), (int)(4 * density), (int)(6 * density));
             
             GradientDrawable inputDrawable = new GradientDrawable();
-            inputDrawable.setColor(Color.parseColor("#373737"));
-            inputDrawable.setCornerRadius(8 * density);
+            inputDrawable.setColor(Color.TRANSPARENT);
+            // Donja linija kao indikator polja
+            inputDrawable.setStroke((int) (1 * density), Color.parseColor("#373737"));
             input.setBackground(inputDrawable);
             
             layout.addView(input);
@@ -250,26 +253,29 @@ public class MainActivity extends AppCompatActivity {
             buttonLayout.setGravity(Gravity.END);
             buttonLayout.setPadding(0, (int)(18 * density), 0, 0);
 
-            // Stil za dugmiće (#2D2D2F pozadina, #F3F2F6 tekst, zaobljeni krajevi)
+            // Stil za dugmiće: boja #CAD967, tekst #070707, zaobljeni krajevi, smanjena visina za 3px gore/dole
             GradientDrawable btnDrawable = new GradientDrawable();
-            btnDrawable.setColor(Color.parseColor("#2D2D2F"));
+            btnDrawable.setColor(Color.parseColor("#CAD967"));
             btnDrawable.setCornerRadius(8 * density);
 
             Button closeButton = new Button(this);
             closeButton.setText("Close");
             closeButton.setAllCaps(false);
-            closeButton.setTextColor(Color.parseColor("#F3F2F6"));
+            closeButton.setTextColor(Color.parseColor("#070707"));
             closeButton.setBackground(btnDrawable);
+            // Smanjenje visine dugmeta (manji padding gore i dole)
+            closeButton.setPadding((int)(16 * density), (int)(4 * density), (int)(16 * density), (int)(4 * density));
 
             Button saveButton = new Button(this);
             saveButton.setText("Save");
             saveButton.setAllCaps(false);
-            saveButton.setTextColor(Color.parseColor("#F3F2F6"));
-            // Koristimo novi objekat ili isti ako želimo da dele stil, ovde pravimo zaseban da se izbegnu konflikti
+            saveButton.setTextColor(Color.parseColor("#070707"));
+            
             GradientDrawable saveBtnDrawable = new GradientDrawable();
-            saveBtnDrawable.setColor(Color.parseColor("#2D2D2F"));
+            saveBtnDrawable.setColor(Color.parseColor("#CAD967"));
             saveBtnDrawable.setCornerRadius(8 * density);
             saveButton.setBackground(saveBtnDrawable);
+            saveButton.setPadding((int)(16 * density), (int)(4 * density), (int)(16 * density), (int)(4 * density));
 
             LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -304,14 +310,13 @@ public class MainActivity extends AppCompatActivity {
 
             dialog.show();
 
-            // Smanjivanje prozora sa leve i desne strane za dodatnih 30px (ukupno sa svake strane)
+            // Dodatno uži prozor: oduzimamo još 10px sa leve i desne strane (ukupno 80px u odnosu na ekran)
             if (dialog.getWindow() != null) {
                 WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
                 lp.copyFrom(dialog.getWindow().getAttributes());
                 
-                // Izračunavamo širinu ekrana pa oduzimamo 60px (30px sa leve i 30px sa desne strane)
                 int screenWidth = getResources().getDisplayMetrics().widthPixels;
-                lp.width = screenWidth - (int) (60 * density);
+                lp.width = screenWidth - (int) (80 * density);
                 lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
                 dialog.getWindow().setAttributes(lp);
             }
