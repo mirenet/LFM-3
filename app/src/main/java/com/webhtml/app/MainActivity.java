@@ -262,14 +262,19 @@ public class MainActivity extends AppCompatActivity {
             btnDrawable.setColor(Color.parseColor("#CAD967"));
             btnDrawable.setCornerRadius(8 * density);
 
-            // Korišćenje TextView umesto Button klase da bi se u potpunosti izbegle podrazumevane Android dimenzije
+            // Korišćenje TextView sa tačno podešenim unutrašnjim padding-om (originalni horizontalni + 5-6px, vertikalni + 2px)
+            // Originalni padding je bio: (14 * density) levo/desno, (6 * density) gore/dole.
+            // Povećavamo horizontalno za ~5.5px, a vertikalno za 2px.
+            int btnPadLeftRight = (int) (14 * density + 5.5 * density);
+            int btnPadTopBottom = (int) (6 * density + 2 * density);
+
             TextView closeButton = new TextView(this);
             closeButton.setText("Close");
             closeButton.setTextColor(Color.parseColor("#070707"));
             closeButton.setBackground(btnDrawable);
             closeButton.setTextSize(13);
             closeButton.setGravity(Gravity.CENTER);
-            closeButton.setPadding((int)(14 * density), (int)(6 * density), (int)(14 * density), (int)(6 * density));
+            closeButton.setPadding(btnPadLeftRight, btnPadTopBottom, btnPadLeftRight, btnPadTopBottom);
 
             GradientDrawable saveBtnDrawable = new GradientDrawable();
             saveBtnDrawable.setColor(Color.parseColor("#CAD967"));
@@ -281,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
             saveButton.setBackground(saveBtnDrawable);
             saveButton.setTextSize(13);
             saveButton.setGravity(Gravity.CENTER);
-            saveButton.setPadding((int)(14 * density), (int)(6 * density), (int)(14 * density), (int)(6 * density));
+            saveButton.setPadding(btnPadLeftRight, btnPadTopBottom, btnPadLeftRight, btnPadTopBottom);
 
             LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
