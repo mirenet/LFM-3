@@ -8,13 +8,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Gravity;
-import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -205,49 +205,80 @@ public class MainActivity extends AppCompatActivity {
 
     private void showNativeDownloadDialog(String suggestedFileName, String url, String mimetype, boolean isBlob) {
         runOnUiThread(() -> {
+            float density = getResources().getDisplayMetrics().density;
+            
+            // Glavni kontejner sa #1a1a1c pozadinom i smanjenom širinom/visinom (uvučeno dodatno sa strane)
             LinearLayout layout = new LinearLayout(this);
             layout.setOrientation(LinearLayout.VERTICAL);
-            int padding = (int) (20 * getResources().getDisplayMetrics().density);
-            layout.setPadding(padding, padding, padding, padding);
-            layout.setBackgroundColor(Color.parseColor("#1a1a1c"));
+            int padHoriz = (int) (28 * density);
+            int padVert = (int) (18 * density);
+            layout.setPadding(padHoriz, padVert, padHoriz, padVert);
+            
+            GradientDrawable backgroundDrawable = new GradientDrawable();
+            backgroundDrawable.setColor(Color.parseColor("#1a1a1c"));
+            backgroundDrawable.setCornerRadius(16 * density);
+            layout.setBackground(backgroundDrawable);
 
+            // Naslov dijaloga
             TextView titleView = new TextView(this);
             titleView.setText("Save File");
             titleView.setTextColor(Color.parseColor("#CBD868"));
-            titleView.setTextSize(18);
+            titleView.setTextSize(17);
             titleView.setGravity(Gravity.CENTER);
-            titleView.setPadding(0, 0, 0, (int)(16 * getResources().getDisplayMetrics().density));
+            titleView.setPadding(0, 0, 0, (int)(14 * density));
             layout.addView(titleView);
 
+            // Input polje za naziv fajla
             final EditText input = new EditText(this);
             input.setText(suggestedFileName);
-            input.setTextColor(Color.parseColor("#9E9DA4"));
-            input.setBackgroundColor(Color.parseColor("#1A1A1A"));
-            input.setPadding((int)(12 * getResources().getDisplayMetrics().density), (int)(12 * getResources().getDisplayMetrics().density), (int)(12 * getResources().getDisplayMetrics().density), (int)(12 * getResources().getDisplayMetrics().density));
+            input.setTextSize(15);
+            input.setPadding((int)(12 * density), (int)(10 * density), (int)(12 * density), (int)(10 * density));
             layout.addView(input);
 
+            // Kontejner za dugmiće unutar istog prozora da ne bi bilo sivih pozadina
+            LinearLayout buttonLayout = new LinearLayout(this);
+            buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
+            buttonLayout.setGravity(Gravity.END);
+            buttonLayout.setPadding(0, (int)(16 * density), 0, 0);
+
+            Button closeButton = new Button(this);
+            closeButton.setText("Close");
+            closeButton.setAllCaps(false);
+
+            Button saveButton = new Button(this);
+            saveButton.setText("Save");
+            saveButton.setAllCaps(false);
+
+            LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            btnParams.setMargins((int)(8 * density), 0, 0, 0);
+            closeButton.setLayoutParams(btnParams);
+            saveButton.setLayoutParams(btnParams);
+
+            buttonLayout.addView(closeButton);
+            buttonLayout.addView(saveButton);
+            layout.addView(buttonLayout);
+
+            // Kreiramo prozor bez standardnih dugmića i pozadina sistema
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setView(layout)
-                    .setPositiveButton("Save", null)
-                    .setNegativeButton("Close", (d, which) -> d.dismiss())
                     .create();
 
-            dialog.setOnShowListener(d -> {
-                Button saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                Button closeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-                
-                saveButton.setTextColor(Color.parseColor("#555555"));
-                saveButton.setBackgroundColor(Color.parseColor("#CBD868"));
-                closeButton.setTextColor(Color.parseColor("#CBD868"));
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
 
-                saveButton.setOnClickListener(v -> {
-                    String finalName = input.getText().toString().trim();
-                    if (finalName.isEmpty()) {
-                        finalName = suggestedFileName;
-                    }
-                    executeDownloadTask(finalName, url, mimetype, isBlob);
-                    dialog.dismiss();
-                });
+            closeButton.setOnClickListener(v -> dialog.dismiss());
+
+            saveButton.setOnClickListener(v -> {
+                String finalName = input.getText().toString().trim();
+                if (finalName.isEmpty()) {
+                    finalName = suggestedFileName;
+                }
+                executeDownloadTask(finalName, url, mimetype, isBlob);
+                dialog.dismiss();
             });
 
             dialog.show();
