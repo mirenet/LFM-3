@@ -423,6 +423,12 @@ public class MainActivity extends AppCompatActivity {
 
             dialog.show();
 
+            if (dialog.getWindow() != null) {
+            WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+            params.dimAmount = 0.05f;
+            dialog.getWindow().setAttributes(params);
+            }  
+
             // =========================
             // VELIČINA DIALOGA
             // =========================
