@@ -245,8 +245,8 @@ public class MainActivity extends AppCompatActivity {
 
             // Tanka ivica oko prozora
             backgroundDrawable.setStroke(
-                    (int) (1 * density),
-                    Color.parseColor("#3F4235")
+                    (int) (1.5f * density),
+                    Color.parseColor("#373737")
             );
 
             layout.setBackground(backgroundDrawable);
