@@ -261,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
             titleView.setText("Save File");
 
             titleView.setTextColor(
-                    Color.parseColor("#F1F1F3")
+                    Color.parseColor("#C5C5C5")
             );
 
             titleView.setTextSize(19);
@@ -372,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
 
             buttonLayout.setPadding(
                     0,
-                    (int) (48 * density),
+                    (int) (40 * density),
                     0,
                     (int) (4 * density)
             );
@@ -447,13 +447,13 @@ public class MainActivity extends AppCompatActivity {
 
             saveButton.setTypeface(
                     null,
-                    android.graphics.Typeface.BOLD
+                    android.graphics.Typeface.NORMAL
             );
 
             saveButton.setPadding(
-                    (int) (14 * density),
+                    (int) (16 * density),
                     (int) (10 * density),
-                    (int) (14 * density),
+                    (int) (16 * density),
                     (int) (10 * density)
             );
 
