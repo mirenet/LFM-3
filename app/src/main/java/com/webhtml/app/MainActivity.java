@@ -210,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             float density = getResources().getDisplayMetrics().density;
             
-            // Glavni kontejner sa bojom pozadine #0F0F0F i borderom #454835
             LinearLayout layout = new LinearLayout(this);
             layout.setOrientation(LinearLayout.VERTICAL);
             int padHoriz = (int) (22 * density);
@@ -223,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
             backgroundDrawable.setStroke((int) (1 * density), Color.parseColor("#454835"));
             layout.setBackground(backgroundDrawable);
 
-            // Naslov dijaloga
             TextView titleView = new TextView(this);
             titleView.setText("Save File");
             titleView.setTextColor(Color.parseColor("#CAD967"));
@@ -232,16 +230,13 @@ public class MainActivity extends AppCompatActivity {
             titleView.setPadding(0, 0, 0, (int)(14 * density));
             layout.addView(titleView);
 
-            // Input polje sa čistom donjom linijom (bez okvira)
             final EditText input = new EditText(this);
             input.setText(suggestedFileName);
             input.setTextSize(15);
             input.setTextColor(Color.parseColor("#F3F2F6"));
-            // Uklanjamo pozadinu i dajemo samo donju liniju
             input.setBackground(null);
             input.setPadding(0, (int)(4 * density), 0, (int)(8 * density));
 
-            // Kreiramo mali kontejner za input da bismo mu dodali donju liniju precizno
             LinearLayout inputContainer = new LinearLayout(this);
             inputContainer.setOrientation(LinearLayout.VERTICAL);
             inputContainer.addView(input, new LinearLayout.LayoutParams(
@@ -249,7 +244,6 @@ public class MainActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams.WRAP_CONTENT
             ));
             
-            // Donja linija kao zaseban tanki view
             View bottomLine = new View(this);
             bottomLine.setBackgroundColor(Color.parseColor("#373737"));
             LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
@@ -260,13 +254,11 @@ public class MainActivity extends AppCompatActivity {
             
             layout.addView(inputContainer);
 
-            // Kontejner za dugmiće
             LinearLayout buttonLayout = new LinearLayout(this);
             buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
             buttonLayout.setGravity(Gravity.END);
             buttonLayout.setPadding(0, (int)(18 * density), 0, 0);
 
-            // Stil za dugmiće: boja #CAD967, tekst #070707, zaobljeni krajevi
             GradientDrawable btnDrawable = new GradientDrawable();
             btnDrawable.setColor(Color.parseColor("#CAD967"));
             btnDrawable.setCornerRadius(8 * density);
@@ -276,9 +268,8 @@ public class MainActivity extends AppCompatActivity {
             closeButton.setAllCaps(false);
             closeButton.setTextColor(Color.parseColor("#070707"));
             closeButton.setBackground(btnDrawable);
-            closeButton.setTextSize(13); // Smanjen tekst da prati manju visinu
+            closeButton.setTextSize(13);
             
-            // Izbacivanje podrazumevanih Android margina/paddinga da dugmići ne budu bucmasti
             closeButton.setIncludeFontPadding(false);
             closeButton.setMinWidth(0);
             closeButton.setMinimumWidth(0);
@@ -339,7 +330,6 @@ public class MainActivity extends AppCompatActivity {
 
             dialog.show();
 
-            // Širina prozora sa dodatnih -10px sa svake strane
             if (dialog.getWindow() != null) {
                 WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
                 lp.copyFrom(dialog.getWindow().getAttributes());
