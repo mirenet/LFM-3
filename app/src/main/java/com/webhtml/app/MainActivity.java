@@ -7,11 +7,14 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.Gravity;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -20,8 +23,10 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,11 +54,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         
         webView = new WebView(this);
-        webView.setBackgroundColor(android.graphics.Color.parseColor("#070707"));
+        webView.setBackgroundColor(Color.parseColor("#070707"));
         setContentView(webView);
 
         WebSettings webSettings = webView.getSettings();
-
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
@@ -64,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         webSettings.setMediaPlaybackRequiresUserGesture(false);
 
-        webView.addJavascriptInterface(new BlobDownloadInterface(this), "AndroidDownloadBridge");
+        webView.addJavascriptInterface(new AppBridge(this), "AndroidBridge");
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
             String rawSuggestedName = android.webkit.URLUtil.guessFileName(url, contentDisposition, mimetype);
@@ -82,17 +86,17 @@ public class MainActivity extends AppCompatActivity {
                         "    .then(blob => {" +
                         "      var reader = new FileReader();" +
                         "      reader.onload = function() {" +
-                        "        window.AndroidDownloadBridge.cacheData(reader.result);" +
+                        "        window.AndroidBridge.cacheData(reader.result);" +
                         "      };" +
                         "      reader.readAsDataURL(blob);" +
-                        "    }).catch(err => window.AndroidDownloadBridge.cacheData('ERROR'));" +
+                        "    }).catch(err => window.AndroidBridge.cacheData('ERROR'));" +
                         "})();";
                 webView.evaluateJavascript(js, null);
 
-                webView.postDelayed(() -> showSaveDialog(suggestedFileName, url, mimetype, true), 300);
+                webView.postDelayed(() -> showNativeDownloadDialog(suggestedFileName, url, mimetype, true), 300);
             } else {
                 cachedBlobData = null;
-                showSaveDialog(suggestedFileName, url, mimetype, false);
+                showNativeDownloadDialog(suggestedFileName, url, mimetype, false);
             }
         });
 
@@ -106,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String urlStr = request.getUrl().toString();
-                
                 if (!urlStr.contains("#")) {
                     return super.shouldInterceptRequest(view, request);
                 }
@@ -200,85 +203,94 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-    public class BlobDownloadInterface {
-        private Context context;
+    private void showNativeDownloadDialog(String suggestedFileName, String url, String mimetype, boolean isBlob) {
+        runOnUiThread(() -> {
+            LinearLayout layout = new LinearLayout(this);
+            layout.setOrientation(LinearLayout.VERTICAL);
+            int padding = (int) (20 * getResources().getDisplayMetrics().density);
+            layout.setPadding(padding, padding, padding, padding);
+            layout.setBackgroundColor(Color.parseColor("#1a1a1c"));
 
-        public BlobDownloadInterface(Context context) {
-            this.context = context;
+            TextView titleView = new TextView(this);
+            titleView.setText("Save File");
+            titleView.setTextColor(Color.parseColor("#CBD868"));
+            titleView.setTextSize(18);
+            titleView.setGravity(Gravity.CENTER);
+            titleView.setPadding(0, 0, 0, (int)(16 * getResources().getDisplayMetrics().density));
+            layout.addView(titleView);
+
+            final EditText input = new EditText(this);
+            input.setText(suggestedFileName);
+            input.setTextColor(Color.parseColor("#9E9DA4"));
+            input.setBackgroundColor(Color.parseColor("#1A1A1A"));
+            input.setPadding((int)(12 * getResources().getDisplayMetrics().density), (int)(12 * getResources().getDisplayMetrics().density), (int)(12 * getResources().getDisplayMetrics().density), (int)(12 * getResources().getDisplayMetrics().density));
+            layout.addView(input);
+
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setView(layout)
+                    .setPositiveButton("Save", null)
+                    .setNegativeButton("Close", (d, which) -> d.dismiss())
+                    .create();
+
+            dialog.setOnShowListener(d -> {
+                Button saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                Button closeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                
+                saveButton.setTextColor(Color.parseColor("#555555"));
+                saveButton.setBackgroundColor(Color.parseColor("#CBD868"));
+                closeButton.setTextColor(Color.parseColor("#CBD868"));
+
+                saveButton.setOnClickListener(v -> {
+                    String finalName = input.getText().toString().trim();
+                    if (finalName.isEmpty()) {
+                        finalName = suggestedFileName;
+                    }
+                    executeDownloadTask(finalName, url, mimetype, isBlob);
+                    dialog.dismiss();
+                });
+            });
+
+            dialog.show();
+        });
+    }
+
+    private void executeDownloadTask(String fileName, String url, String mimetype, boolean isBlob) {
+        final String finalFileName = fileName.replaceAll("[\\\\/:*?\"<>|]", "_");
+        if (isBlob) {
+            if (cachedBlobData != null && !cachedBlobData.equals("ERROR")) {
+                saveBase64ToFile(cachedBlobData, finalFileName);
+            } else {
+                Toast.makeText(getApplicationContext(), "Error: Blob data not ready or expired.", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            try {
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                request.setMimeType(mimetype);
+                request.setTitle(finalFileName);
+                request.setDescription("Downloading file...");
+                request.allowScanningByMediaScanner();
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, finalFileName);
+                
+                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                if (dm != null) {
+                    dm.enqueue(request);
+                    Toast.makeText(getApplicationContext(), "Download started...", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
+    }
+
+    public class AppBridge {
+        private Context context;
+        public AppBridge(Context context) { this.context = context; }
 
         @JavascriptInterface
         public void cacheData(String data) {
             cachedBlobData = data;
         }
-    }
-
-    private void showSaveDialog(String suggestedFileName, String url, String mimetype, boolean isBlob) {
-        runOnUiThread(() -> {
-            android.text.InputFilter[] filters = new android.text.InputFilter[1];
-            filters[0] = new android.text.InputFilter.LengthFilter(100);
-
-            final EditText input = new EditText(MainActivity.this);
-            input.setText(suggestedFileName);
-            input.setSelection(suggestedFileName.length());
-            input.setTextColor(android.graphics.Color.WHITE);
-            input.setHintTextColor(android.graphics.Color.GRAY);
-            input.setFilters(filters);
-
-            int padding = (int) (20 * getResources().getDisplayMetrics().density);
-            FrameLayout container = new FrameLayout(MainActivity.this);
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
-                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-            );
-            params.leftMargin = padding;
-            params.rightMargin = padding;
-            input.setLayoutParams(params);
-            container.addView(input);
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle("Save File");
-            builder.setMessage("Enter File Name:");
-            builder.setView(container);
-
-            builder.setPositiveButton("Save", (dialog, which) -> {
-                String inputName = input.getText().toString().trim();
-                if (inputName.isEmpty()) {
-                    inputName = suggestedFileName;
-                }
-                
-                final String finalFileName = inputName.replaceAll("[\\\\/:*?\"<>|]", "_");
-
-                if (isBlob) {
-                    if (cachedBlobData != null && !cachedBlobData.equals("ERROR")) {
-                        saveBase64ToFile(cachedBlobData, finalFileName);
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Error: Blob data not ready or expired.", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    try {
-                        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-                        request.setMimeType(mimetype);
-                        request.setTitle(finalFileName);
-                        request.setDescription("Downloading file...");
-                        request.allowScanningByMediaScanner();
-                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, finalFileName);
-                        
-                        DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                        if (dm != null) {
-                            dm.enqueue(request);
-                            Toast.makeText(getApplicationContext(), "Download started...", Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
-
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-            builder.show();
-        });
     }
 
     private void saveBase64ToFile(String base64Data, String name) {
@@ -303,9 +315,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                if (!downloadsDir.exists()) {
-                    downloadsDir.mkdirs();
-                }
+                if (!downloadsDir.exists()) downloadsDir.mkdirs();
                 File file = new File(downloadsDir, name);
                 os = new java.io.FileOutputStream(file);
 
@@ -318,12 +328,12 @@ public class MainActivity extends AppCompatActivity {
                 os.write(decodedBytes);
                 os.flush();
                 os.close();
-                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "File saved: " + name, Toast.LENGTH_LONG).show());
+                Toast.makeText(getApplicationContext(), "File saved: " + name, Toast.LENGTH_LONG).show();
             } else {
                 throw new Exception("Could not open output stream.");
             }
         } catch (Exception e) {
-            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            Toast.makeText(getApplicationContext(), "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
