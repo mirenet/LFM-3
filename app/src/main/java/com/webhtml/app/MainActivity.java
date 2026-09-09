@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Gravity;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -207,10 +209,10 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             float density = getResources().getDisplayMetrics().density;
             
-            // Glavni kontejner sa #1a1a1c pozadinom i smanjenom širinom/visinom (uvučeno dodatno sa strane)
+            // Glavni kontejner sa #1a1a1c pozadinom
             LinearLayout layout = new LinearLayout(this);
             layout.setOrientation(LinearLayout.VERTICAL);
-            int padHoriz = (int) (28 * density);
+            int padHoriz = (int) (22 * density); // blago smanjeno unutar layout-a
             int padVert = (int) (18 * density);
             layout.setPadding(padHoriz, padVert, padHoriz, padVert);
             
@@ -228,32 +230,52 @@ public class MainActivity extends AppCompatActivity {
             titleView.setPadding(0, 0, 0, (int)(14 * density));
             layout.addView(titleView);
 
-            // Input polje za naziv fajla
+            // Input polje za naziv fajla sa bojom pozadine #373737
             final EditText input = new EditText(this);
             input.setText(suggestedFileName);
             input.setTextSize(15);
+            input.setTextColor(Color.parseColor("#F3F2F6"));
             input.setPadding((int)(12 * density), (int)(10 * density), (int)(12 * density), (int)(10 * density));
+            
+            GradientDrawable inputDrawable = new GradientDrawable();
+            inputDrawable.setColor(Color.parseColor("#373737"));
+            inputDrawable.setCornerRadius(8 * density);
+            input.setBackground(inputDrawable);
+            
             layout.addView(input);
 
-            // Kontejner za dugmiće unutar istog prozora da ne bi bilo sivih pozadina
+            // Kontejner za dugmiće
             LinearLayout buttonLayout = new LinearLayout(this);
             buttonLayout.setOrientation(LinearLayout.HORIZONTAL);
             buttonLayout.setGravity(Gravity.END);
-            buttonLayout.setPadding(0, (int)(16 * density), 0, 0);
+            buttonLayout.setPadding(0, (int)(18 * density), 0, 0);
+
+            // Stil za dugmiće (#2D2D2F pozadina, #F3F2F6 tekst, zaobljeni krajevi)
+            GradientDrawable btnDrawable = new GradientDrawable();
+            btnDrawable.setColor(Color.parseColor("#2D2D2F"));
+            btnDrawable.setCornerRadius(8 * density);
 
             Button closeButton = new Button(this);
             closeButton.setText("Close");
             closeButton.setAllCaps(false);
+            closeButton.setTextColor(Color.parseColor("#F3F2F6"));
+            closeButton.setBackground(btnDrawable);
 
             Button saveButton = new Button(this);
             saveButton.setText("Save");
             saveButton.setAllCaps(false);
+            saveButton.setTextColor(Color.parseColor("#F3F2F6"));
+            // Koristimo novi objekat ili isti ako želimo da dele stil, ovde pravimo zaseban da se izbegnu konflikti
+            GradientDrawable saveBtnDrawable = new GradientDrawable();
+            saveBtnDrawable.setColor(Color.parseColor("#2D2D2F"));
+            saveBtnDrawable.setCornerRadius(8 * density);
+            saveButton.setBackground(saveBtnDrawable);
 
             LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
             );
-            btnParams.setMargins((int)(8 * density), 0, 0, 0);
+            btnParams.setMargins((int)(10 * density), 0, 0, 0);
             closeButton.setLayoutParams(btnParams);
             saveButton.setLayoutParams(btnParams);
 
@@ -261,7 +283,6 @@ public class MainActivity extends AppCompatActivity {
             buttonLayout.addView(saveButton);
             layout.addView(buttonLayout);
 
-            // Kreiramo prozor bez standardnih dugmića i pozadina sistema
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setView(layout)
                     .create();
@@ -282,6 +303,18 @@ public class MainActivity extends AppCompatActivity {
             });
 
             dialog.show();
+
+            // Smanjivanje prozora sa leve i desne strane za dodatnih 30px (ukupno sa svake strane)
+            if (dialog.getWindow() != null) {
+                WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+                lp.copyFrom(dialog.getWindow().getAttributes());
+                
+                // Izračunavamo širinu ekrana pa oduzimamo 60px (30px sa leve i 30px sa desne strane)
+                int screenWidth = getResources().getDisplayMetrics().widthPixels;
+                lp.width = screenWidth - (int) (60 * density);
+                lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                dialog.getWindow().setAttributes(lp);
+            }
         });
     }
 
